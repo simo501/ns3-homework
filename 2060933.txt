@@ -1,0 +1,9 @@
+TCP burst traffic of 1077 B for each packet starting at 0.73 s
+	Sender: Node 6	Receiver: Server 0
+TCP burst traffic of 1331 B for each packet starting at 3.15 s
+	Sender: Node 12	Receiver: Server 1
+TCP burst traffic of 1749 B for each packet starting at 3.35 s
+	Sender: Node 13	Receiver: Server 0
+Wi-Fi operating in Ad Hoc mode, stationary devices, no random walk
+UDP Echo application with Client 15 and Server 3
+	Size of packet: 1169 Bytes	Periodicity: 20ms	MaxPackets: 250
