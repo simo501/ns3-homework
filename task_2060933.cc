@@ -58,7 +58,7 @@ main(int argc, char* argv[])
 
     NodeContainer leaves4NodeContainer;
     leaves4NodeContainer.Create(4);
-    
+
     // there is no 3 because 3 is represented by the AP
     NodeContainer wifiApNode;
     wifiApNode.Create(1);
@@ -261,13 +261,13 @@ main(int argc, char* argv[])
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     Simulator::Stop(Seconds(15.0));
 
-    OnOffHelper onOffHelper("ns3::TcpSocketFactory", Address());
-    onOffHelper.SetAttribute("OnTime", StringValue("ns3::ConstaantRandomVariable[Constant=1]"));
-    onOffHelper.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+    OnOffHelper onOffHelperSender6Receiver0("ns3::TcpSocketFactory", Address());
+    onOffHelperSender6Receiver0.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+    onOffHelperSender6Receiver0.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
 
     AddressValue firstOnOffAddr(InetSocketAddress(firstSubnetInterfaces.GetAddress(1), port));
-    onOffHelper.SetAttribute("Remote", firstOnOffAddr);
-    clientApp.Add(onOffHelper.Install(leaves4NodeContainer.Get(0)));
+    onOffHelperSender6Receiver0.SetAttribute("Remote", firstOnOffAddr);
+    clientApp.Add(onOffHelperSender6Receiver0.Install(leaves4NodeContainer.Get(0)));
 
     // to print ip addresses of subnets
     // for (int i = 0; i < (int)firstSubnetInterfaces.GetN(); i++ ) {
