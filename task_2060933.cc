@@ -20,6 +20,7 @@ main(int argc, char* argv[])
     // LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);
     /////////////////////////////////////////////////////////////////
 
+
     std::string studentId;
     bool isEnabledRtsCts = false;
     bool tracing = false;
@@ -193,6 +194,11 @@ main(int argc, char* argv[])
     Ipv4InterfaceContainer staInterfaces = addresses.Assign(adhocDevices);
     Ipv4InterfaceContainer apInterfaces = addresses.Assign(apDevices);
 
+    if (isEnabledRtsCts)
+    {
+        Config::SetDefault ("ns3::WifiRemoteStationManager::RtsCtsThreshold", UintegerValue(0));
+    }
+
     // Ipv4InterfaceContainer allInterfaces;
     // allInterfaces.Add(mainNodesInterfaces);
     // allInterfaces.Add(firstSubnetInterfaces);
@@ -225,6 +231,8 @@ main(int argc, char* argv[])
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
     mobility.Install(wifiApNode);
 
+    ////////////////////////////
+    ///////////////////////////
     uint16_t port = 9; // well-known echo port number
     UdpEchoServerHelper server(port);
     ApplicationContainer serverApp = server.Install(allNodes.Get(4));
@@ -233,7 +241,6 @@ main(int argc, char* argv[])
 
     uint32_t packetSize = 1169;
     uint32_t maxPacketCount = 250;
-
     Time interPacketInterval = MilliSeconds(20);
 
     UdpEchoClientHelper client(staInterfaces.GetAddress(5), port);
@@ -261,13 +268,56 @@ main(int argc, char* argv[])
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
     Simulator::Stop(Seconds(15.0));
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 6 ------> 0
     OnOffHelper onOffHelperSender6Receiver0("ns3::TcpSocketFactory", Address());
-    onOffHelperSender6Receiver0.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
-    onOffHelperSender6Receiver0.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+    onOffHelperSender6Receiver0.SetAttribute(
+        "OnTime",
+        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+    onOffHelperSender6Receiver0.SetAttribute(
+        "OffTime",
+        StringValue("ns3::ConstantRandomVariable[Constant=0]"));
 
-    AddressValue firstOnOffAddr(InetSocketAddress(firstSubnetInterfaces.GetAddress(1), port));
-    onOffHelperSender6Receiver0.SetAttribute("Remote", firstOnOffAddr);
+    AddressValue sender6Receiver0OnOffAddr(
+        InetSocketAddress(firstSubnetInterfaces.GetAddress(1), port));
+    onOffHelperSender6Receiver0.SetAttribute("Remote", sender6Receiver0OnOffAddr);
+    onOffHelperSender6Receiver0.SetAttribute("PacketSize", UintegerValue(1077));
     clientApp.Add(onOffHelperSender6Receiver0.Install(leaves4NodeContainer.Get(0)));
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 12 ------> 1
+    OnOffHelper onOffHelperSender12Receiver1("ns3::TcpSocketFactory", Address());
+    onOffHelperSender12Receiver1.SetAttribute(
+        "OnTime",
+        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+    onOffHelperSender12Receiver1.SetAttribute(
+        "OffTime",
+        StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+
+    AddressValue sender12Receiver1OnOffAddr(
+        InetSocketAddress(firstSubnetInterfaces.GetAddress(0), port));
+    onOffHelperSender12Receiver1.SetAttribute("Remote", sender12Receiver1OnOffAddr);
+    onOffHelperSender12Receiver1.SetAttribute("PacketSize", UintegerValue(1331));
+    clientApp.Add(onOffHelperSender12Receiver1.Install(wifiStaNodes.Get(1)));
+
+    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // 13 ------> 0
+    OnOffHelper onOffHelperSender13Receiver0("ns3::TcpSocketFactory", Address());
+    onOffHelperSender13Receiver0.SetAttribute(
+        "OnTime",
+        StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+    onOffHelperSender13Receiver0.SetAttribute(
+        "OffTime",
+        StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+
+    AddressValue sender13Receiver0OnOffAddr(
+        InetSocketAddress(firstSubnetInterfaces.GetAddress(1), port));
+    onOffHelperSender13Receiver0.SetAttribute("Remote", sender13Receiver0OnOffAddr);
+    onOffHelperSender13Receiver0.SetAttribute("PacketSize", UintegerValue(1749));
+    clientApp.Add(onOffHelperSender13Receiver0.Install(wifiStaNodes.Get(2)));
 
     // to print ip addresses of subnets
     // for (int i = 0; i < (int)firstSubnetInterfaces.GetN(); i++ ) {
