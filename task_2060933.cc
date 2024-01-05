@@ -5,12 +5,12 @@
 #include "ns3/internet-module.h"
 #include "ns3/mobility-module.h"
 #include "ns3/network-module.h"
+#include "ns3/point-to-point-layout-module.h"
 #include "ns3/point-to-point-module.h"
 #include "ns3/simple-device-energy-model.h"
 #include "ns3/ssid.h"
 #include "ns3/wifi-radio-energy-model.h"
 #include "ns3/yans-wifi-helper.h"
-#include "ns3/point-to-point-layout-module.h"
 
 using namespace ns3;
 
@@ -43,7 +43,6 @@ main(int argc, char* argv[])
         NS_LOG_UNCOND("missing studentId");
         return 1;
     }
-
 
     /*
         ===============================
@@ -121,7 +120,7 @@ main(int argc, char* argv[])
     allNodes.Add(root2NodeContainer);   //  1
     allNodes.Add(root4NodeContainer);   //  1
     allNodes.Add(leaves4NodeContainer); //  4
-    // there is no access point because it's in adhoc mode 
+    // there is no access point because it's in adhoc mode
     // allNodes.Add(wifiApNode);           //  1
     allNodes.Add(wifiStaNodes); //  9 + 1
 
@@ -146,8 +145,10 @@ main(int argc, char* argv[])
     secondSubnet.Add(csma10_200.Install(secondSubnetCsmaNodeContainer));
 
     // fourth subnet
-    fourthSubnet.Add(ptp5_20.Install(root4NodeContainer.Get(0), leaves4NodeContainer.Get(0))); // first leaf
-    fourthSubnet.Add(ptp5_20.Install(root4NodeContainer.Get(0), secondStar.GetHub())); // second leaf (the star one)
+    fourthSubnet.Add(
+        ptp5_20.Install(root4NodeContainer.Get(0), leaves4NodeContainer.Get(0))); // first leaf
+    fourthSubnet.Add(ptp5_20.Install(root4NodeContainer.Get(0),
+                                     secondStar.GetHub())); // second leaf (the star one)
 
     // WIFI PART
     ////////////////////////////////////////////////////////////////
@@ -171,12 +172,12 @@ main(int argc, char* argv[])
         Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", UintegerValue(0));
     }
 
-    Ptr<ListPositionAllocator> positionAllocS = CreateObject<ListPositionAllocator> ();
-    positionAllocS->Add(Vector(-10.0, -10.0, 0.0));// node
+    Ptr<ListPositionAllocator> positionAllocS = CreateObject<ListPositionAllocator>();
+    positionAllocS->Add(Vector(-10.0, -10.0, 0.0)); // node
     MobilityHelper mobility;
     mobility.SetPositionAllocator(positionAllocS);
     mobility.SetMobilityModel("ns3::ConstantPositionMobilityModel");
-    
+
     mobility.Install(wifiStaNodes);
     mobility.Install(wifiApNode);
 
@@ -197,7 +198,7 @@ main(int argc, char* argv[])
     // wifi addresses
     addresses.SetBase("10.0.3.0", "255.255.255.224");
     Ipv4InterfaceContainer staInterfaces = addresses.Assign(adhocDevices);
-    
+
     // fourth subnet addresses
     addresses.SetBase("10.0.4.0", "255.255.255.240");
     Ipv4InterfaceContainer fourthSubnetInterfaces = addresses.Assign(fourthSubnet);
@@ -205,8 +206,7 @@ main(int argc, char* argv[])
     addresses.SetBase("10.0.5.0", "255.255.255.248");
     secondStar.AssignIpv4Addresses(addresses);
 
-    // ECHO                         server 15 client 3
-    //////////////////////////////////////////////////////////////////////////////////////////
+    // ECHO    server 15 client 3
     uint16_t port = 9; // well-known echo port number
     UdpEchoServerHelper server(port);
     ApplicationContainer serverApp = server.Install(secondSubnetCsmaNodeContainer.Get(1));
@@ -233,10 +233,6 @@ main(int argc, char* argv[])
     ApplicationContainer clientApp = client.Install(wifiStaNodes.Get(5));
 
     client.SetFill(clientApp.Get(0), packetData, sizeof(packetData), packetSize);
-    // another way to do this, maybe better looking :)
-    // client.SetFill(clientApp.Get(0),
-    // std::string("Christian,Savini,2060933,Emanuele,Murino,2060555,Matteo,Mazza,2054534,Niccolò,Pozio,2085512,Simone,Pandolfi,2085703"),
-    // packetSize);
 
     clientApp.Start(Seconds(2.0));
     clientApp.Stop(Seconds(15.0));
@@ -277,8 +273,12 @@ main(int argc, char* argv[])
     // 12 ------> 1
     ApplicationContainer appContainerSender12Receiver1;
     OnOffHelper onOffHelperSender12Receiver1("ns3::TcpSocketFactory", Address());
-    onOffHelperSender12Receiver1.SetAttribute("OnTime", StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
-    onOffHelperSender12Receiver1.SetAttribute("OffTime",StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
+    onOffHelperSender12Receiver1.SetAttribute(
+        "OnTime",
+        StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
+    onOffHelperSender12Receiver1.SetAttribute(
+        "OffTime",
+        StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
 
     AddressValue sender12Receiver1OnOffAddr(
         InetSocketAddress(firstStar.GetHubIpv4Address(0), 50000));
@@ -291,8 +291,12 @@ main(int argc, char* argv[])
     // 13 ------> 0
     ApplicationContainer appContainerSender13Receiver0;
     OnOffHelper onOffHelperSender13Receiver0("ns3::TcpSocketFactory", Address());
-    onOffHelperSender13Receiver0.SetAttribute("OnTime",StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
-    onOffHelperSender13Receiver0.SetAttribute("OffTime",StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
+    onOffHelperSender13Receiver0.SetAttribute(
+        "OnTime",
+        StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
+    onOffHelperSender13Receiver0.SetAttribute(
+        "OffTime",
+        StringValue("ns3::ExponentialRandomVariable[Mean=1]"));
 
     AddressValue sender13Receiver0OnOffAddr(
         InetSocketAddress(firstStar.GetSpokeIpv4Address(0), 50001));
@@ -302,13 +306,12 @@ main(int argc, char* argv[])
     appContainerSender13Receiver0.Start(Seconds(3.35));
     appContainerSender13Receiver0.Stop(Seconds(15.0));
 
-
     if (tracing)
     {
-        ptp100_20.EnablePcap("pcap/task", rootNodeContainer, true);
-        ptp100_20.EnablePcap("pcap/task", wifiApNode, true);
-        ptp100_20.EnablePcap("pcap/task", root4NodeContainer, true);
-        ptp100_20.EnablePcap("pcap/task", root2NodeContainer, true);
+        ptp100_20.EnablePcap("pcap/task-2", rootNodeContainer, true);
+        ptp100_20.EnablePcap("pcap/task-10", wifiApNode, true);
+        ptp100_20.EnablePcap("pcap/task-6", root4NodeContainer, true);
+        ptp100_20.EnablePcap("pcap/task-4", root2NodeContainer, true);
         NS_LOG_UNCOND("PCAP files generated.");
     }
 
