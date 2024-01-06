@@ -20,14 +20,13 @@ int
 main(int argc, char* argv[])
 {
     /////////////////////////////////////////////////////////////////
-    // LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
-    // LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);
-    // LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
+
     /////////////////////////////////////////////////////////////////
 
     std::string studentId;
     bool isEnabledRtsCts = false;
     bool tracing = false;
+    bool debug = false;
 
     CommandLine cmd;
     cmd.AddValue("studentId", "studentId number of the group representative", studentId);
@@ -35,6 +34,7 @@ main(int argc, char* argv[])
                  "boolean parameter to force the usage of RTS/CTS mechanism",
                  isEnabledRtsCts);
     cmd.AddValue("tracing", "boolean parameter to enable promiscuous mode", tracing);
+    cmd.AddValue("debug", "boolean parameter to enable log on UdpEcho and OnOffApplication", debug);
 
     cmd.Parse(argc, argv);
 
@@ -42,6 +42,13 @@ main(int argc, char* argv[])
     {
         NS_LOG_UNCOND("missing studentId");
         return 1;
+    }
+
+    if (debug)
+    {
+        LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);
+        LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);
+        LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);
     }
 
     /*
@@ -169,6 +176,7 @@ main(int argc, char* argv[])
 
     if (isEnabledRtsCts)
     {
+        NS_LOG_UNCOND("Request to Send / Clear to Send is enabled.");
         Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", UintegerValue(0));
     }
 
@@ -203,8 +211,8 @@ main(int argc, char* argv[])
     addresses.SetBase("10.0.4.0", "255.255.255.240");
     Ipv4InterfaceContainer fourthSubnetInterfaces = addresses.Assign(fourthSubnet);
     // fifith subnet addresses
-    addresses.SetBase("10.0.5.0", "255.255.255.248");
-    secondStar.AssignIpv4Addresses(addresses);
+    // addresses.SetBase("10.0.5.0", "255.255.255.248");
+    // secondStar.AssignIpv4Addresses(addresses);
 
     // ECHO    server 15 client 3
     uint16_t port = 9; // well-known echo port number
@@ -308,11 +316,11 @@ main(int argc, char* argv[])
 
     if (tracing)
     {
+        NS_LOG_UNCOND("Tracing is enabled.");
         ptp100_20.EnablePcap("pcap/task-2", rootNodeContainer, true);
         ptp100_20.EnablePcap("pcap/task-10", wifiApNode, true);
         ptp100_20.EnablePcap("pcap/task-6", root4NodeContainer, true);
         ptp100_20.EnablePcap("pcap/task-4", root2NodeContainer, true);
-        NS_LOG_UNCOND("PCAP files generated.");
     }
 
     NS_LOG_INFO("STARTING SIMULATION...");
